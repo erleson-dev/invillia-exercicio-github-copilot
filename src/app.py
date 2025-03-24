@@ -128,10 +128,6 @@ def get_activities():
 lock = Lock()
 
 @app.post("/activities/{activity_name}/signup")
-# Validar se o aluno já está inscrito
-# Validar se a atividade existe
-# Adicionar o aluno na atividade
-# Retornar uma mensagem de sucesso
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
     with lock:
@@ -148,6 +144,10 @@ def signup_for_activity(activity_name: str, email: str):
         # Check if the student is already signed up
         if email in activity["participants"]:
             raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
+        # Check if the activity is full
+        if len(activity["participants"]) >= activity["max_participants"]:
+            raise HTTPException(status_code=400, detail="Activity is full")
 
         # Add student
         activity["participants"].append(email)
