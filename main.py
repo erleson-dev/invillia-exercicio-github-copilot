@@ -19,11 +19,11 @@ def signup_for_activity(activity_name: str, email: str):
         # Normalize email
         email = email.lower()
 
-        # Check if the student is already signed up
+        # Re-check if the student is already signed up (to avoid race conditions)
         if email in activity["participants"]:
             raise HTTPException(status_code=400, detail="Student already signed up for this activity")
 
-        # Check if the activity is full
+        # Re-check if the activity is full (to avoid race conditions)
         if len(activity["participants"]) >= activity["max_participants"]:
             raise HTTPException(status_code=400, detail="Activity is full")
 
