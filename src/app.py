@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from threading import Lock
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -74,6 +75,42 @@ activities = {
         "schedule": "Fridays, 4:00 PM - 5:00 PM",
         "max_participants": 12,
         "participants": ["harper@mergington.edu", "benjamin@mergington.edu"]
+    },
+    "Tennis Club": {
+        "description": "Learn and practice tennis with professional coaching",
+        "schedule": "Tuesdays and Thursdays, 3:00 PM - 4:30 PM",
+        "max_participants": 10,
+        "participants": ["grace@mergington.edu", "henry@mergington.edu"]
+    },
+    "Swimming Team": {
+        "description": "Train for swimming competitions and improve your skills",
+        "schedule": "Mondays and Wednesdays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": ["jackson@mergington.edu", "ella@mergington.edu"]
+    },
+    "Photography Club": {
+        "description": "Learn photography techniques and capture stunning images",
+        "schedule": "Fridays, 3:00 PM - 4:30 PM",
+        "max_participants": 12,
+        "participants": ["scarlett@mergington.edu", "leo@mergington.edu"]
+    },
+    "Music Band": {
+        "description": "Join the school band and perform at events",
+        "schedule": "Tuesdays and Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 20,
+        "participants": ["victoria@mergington.edu", "sebastian@mergington.edu"]
+    },
+    "Debate Club": {
+        "description": "Develop public speaking and argumentation skills",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 15,
+        "participants": ["nathan@mergington.edu", "zoe@mergington.edu"]
+    },
+    "Robotics Club": {
+        "description": "Build and program robots for competitions",
+        "schedule": "Mondays and Fridays, 3:30 PM - 5:00 PM",
+        "max_participants": 10,
+        "participants": ["elijah@mergington.edu", "chloe@mergington.edu"]
     }
 }
 
@@ -88,20 +125,31 @@ def get_activities():
     return activities
 
 
+lock = Lock()
+
 @app.post("/activities/{activity_name}/signup")
+# Validar se o aluno já está inscrito
+# Validar se a atividade existe
+# Adicionar o aluno na atividade
+# Retornar uma mensagem de sucesso
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
-    # Validate activity exists
-    if activity_name not in activities:
-        raise HTTPException(status_code=404, detail="Activity not found")
+    with lock:
+        # Validate activity exists
+        if activity_name not in activities:
+            raise HTTPException(status_code=404, detail="Activity not found")
 
-    # Get the specific activity
-    activity = activities[activity_name]
+        # Get the specific activity
+        activity = activities[activity_name]
 
-    # Check if the student is already signed up
-    if email in activity["participants"]:
-        raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+        # Normalize email
+        email = email.lower()
 
-    # Add student
-    activity["participants"].append(email)
+        # Check if the student is already signed up
+        if email in activity["participants"]:
+            raise HTTPException(status_code=400, detail="Student already signed up for this activity")
+
+        # Add student
+        activity["participants"].append(email)
+        
     return {"message": f"Signed up {email} for {activity_name}"}
